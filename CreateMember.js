@@ -1,31 +1,57 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-import AppBar from "./AppBar";
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Member from "./MemberModel";
 
 const CreateMember = () => {
   const [memberName, setMemberName] = useState("");
   const [memberEmail, setMemberEmail] = useState("");
   const [hourlyRate, setHourlyRate] = useState("");
   const [password, setPassword] = useState("");
+  const [memberArray, setMemberArray] = useState([]);
+
+  useEffect(() => {
+    loadMemberArray();
+  }, []);
+
+  const loadMemberArray = async () => {
+    try {
+      const memberArrayString = await AsyncStorage.getItem("members");
+      if (memberArrayString) {
+        setMemberArray(JSON.parse(memberArrayString));
+      }
+    } catch (error) {
+      console.log("Error loading member array:", error);
+    }
+  };
 
   const handleCreateMember = async () => {
-    // Handle the logic to create a member with the entered details
-    console.log("Member Name:", memberName);
-    console.log("Member Email:", memberEmail);
-    console.log("Hourly Rate:", hourlyRate);
-    console.log("Password:", password);
+    const id = memberArray.length + 1;
+
+    const newMember = new Member(
+      id,
+      memberName,
+      memberEmail,
+      hourlyRate,
+      password
+    );
 
     try {
-      // Save the member details to local storage
-      await AsyncStorage.setItem("memberName", memberName);
-      await AsyncStorage.setItem("memberEmail", memberEmail);
-      await AsyncStorage.setItem("hourlyRate", hourlyRate);
-      await AsyncStorage.setItem("password", password);
+      const updatedMemberArray = [...memberArray, newMember];
+      setMemberArray(updatedMemberArray);
 
-      console.log("Member details saved successfully");
+      await AsyncStorage.setItem("members", JSON.stringify(updatedMemberArray));
+
+      Alert.alert("Success", "Member created successfully");
+
+      setMemberName("");
+      setMemberEmail("");
+      setHourlyRate("");
+      setPassword("");
+
+      console.log("Member created and saved successfully");
     } catch (error) {
-      console.log("Error saving member details:", error);
+      console.log("Error creating member:", error);
     }
   };
 

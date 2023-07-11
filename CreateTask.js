@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-import AppBar from "./AppBar";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -10,22 +9,21 @@ const CreateTask = () => {
   const [taskDescription, setTaskDescription] = useState("");
   const [taskStartDate, setTaskStartDate] = useState(new Date());
   const [taskEndDate, setTaskEndDate] = useState(new Date());
-  const [memberName, setMemberName] = useState("");
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [memberNames, setMemberNames] = useState([]);
+  const [selectedMember, setSelectedMember] = useState({});
+  const [members, setMembers] = useState([]);
 
   useEffect(() => {
-    retrieveMemberNames();
+    retrieveMember();
   }, []);
 
-  const retrieveMemberNames = async () => {
+  const retrieveMember = async () => {
     try {
       const memberData = await AsyncStorage.getItem("members");
       if (memberData !== null) {
         const members = JSON.parse(memberData);
-        const memberNames = members.map((member) => member.name);
-        setMemberNames(memberNames);
+        setMembers(members);
       }
     } catch (error) {
       console.log("Error retrieving member names:", error);
@@ -58,14 +56,14 @@ const CreateTask = () => {
     console.log("Task Description:", taskDescription);
     console.log("Task Start Date:", taskStartDate);
     console.log("Task End Date:", taskEndDate);
-    console.log("Member Name:", memberName);
+    console.log("Member Name:", selectedMember.name);
 
     // Reset the state values to clear the input fields
     setTaskName("");
     setTaskDescription("");
     setTaskStartDate(new Date());
     setTaskEndDate(new Date());
-    setMemberName("");
+    setSelectedMember({});
   };
 
   return (
@@ -116,15 +114,19 @@ const CreateTask = () => {
           )}
         </View>
 
-        <Text style={styles.label}>Member Name</Text>
+        <Text style={styles.label}>Assigned Member</Text>
         <View style={styles.dropdownContainer}>
           <Picker
-            selectedValue={memberName}
+            selectedValue={selectedMember}
             style={styles.dropdown}
-            onValueChange={(value) => setMemberName(value)}
+            onValueChange={(value) => setSelectedMember(value)}
           >
-            {memberNames.map((member, index) => (
-              <Picker.Item key={index} label={member} value={member} />
+            {members.map((member, index) => (
+              <Picker.Item
+                key={index}
+                label={`${member.name} (${member.email})`}
+                value={member}
+              />
             ))}
           </Picker>
         </View>
@@ -173,6 +175,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     marginBottom: 10,
+    justifyContent: "center",
   },
   dropdown: {
     height: 40,
