@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import AppBar from "./AppBar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import AppBar from "./AppBar";
 
 const Members = () => {
   const [memberName, setMemberName] = useState("");

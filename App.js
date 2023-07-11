@@ -7,8 +7,7 @@ import {
   StyleSheet,
   ImageBackground,
 } from "react-native";
-import DashboardScreen from "./DashboardScreen";
-import AppBar from "./AppBar";
+import DrawerMenuScreen from "./DrawerMenu";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -34,7 +33,7 @@ const LoginPage = () => {
   };
 
   if (isLoggedIn) {
-    return <DashboardScreen handleLogout={handleLogout} />;
+    return <DrawerMenuScreen handleLogout={handleLogout} />;
   }
 
   return (
