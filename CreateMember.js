@@ -17,15 +17,36 @@ const CreateMember = () => {
     console.log("Password:", password);
 
     try {
-      // Save the member details to local storage
-      await AsyncStorage.setItem("memberName", memberName);
-      await AsyncStorage.setItem("memberEmail", memberEmail);
-      await AsyncStorage.setItem("hourlyRate", hourlyRate);
-      await AsyncStorage.setItem("password", password);
+      // Retrieve the existing member data from AsyncStorage
+      const existingMembersData = await AsyncStorage.getItem("members");
+      let existingMembers = [];
 
-      console.log("Member details saved successfully");
+      if (existingMembersData !== null) {
+        existingMembers = JSON.parse(existingMembersData);
+      }
+
+      // Create a new member object
+      const newMember = {
+        name: memberName,
+        email: memberEmail,
+        hourlyRate: hourlyRate,
+      };
+
+      // Add the new member to the existing member data
+      existingMembers.push(newMember);
+
+      // Save the updated member data to AsyncStorage
+      await AsyncStorage.setItem("members", JSON.stringify(existingMembers));
+
+      console.log("Member created successfully");
+
+      // Reset the input fields
+      setMemberName("");
+      setMemberEmail("");
+      setHourlyRate("");
+      setPassword("");
     } catch (error) {
-      console.log("Error saving member details:", error);
+      console.log("Error creating member:", error);
     }
   };
 

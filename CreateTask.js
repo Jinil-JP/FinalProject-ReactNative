@@ -10,25 +10,25 @@ const CreateTask = () => {
   const [taskDescription, setTaskDescription] = useState("");
   const [taskStartDate, setTaskStartDate] = useState(new Date());
   const [taskEndDate, setTaskEndDate] = useState(new Date());
-  const [memberName, setMemberName] = useState("");
+  const [memberEmail, setMemberEmail] = useState("");
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [memberNames, setMemberNames] = useState([]);
+  const [memberEmails, setMemberEmails] = useState([]);
 
   useEffect(() => {
-    retrieveMemberNames();
+    retrieveMemberEmails();
   }, []);
 
-  const retrieveMemberNames = async () => {
+  const retrieveMemberEmails = async () => {
     try {
       const memberData = await AsyncStorage.getItem("members");
       if (memberData !== null) {
         const members = JSON.parse(memberData);
-        const memberNames = members.map((member) => member.name);
-        setMemberNames(memberNames);
+        const memberEmails = members.map((member) => member.email);
+        setMemberEmails(memberEmails);
       }
     } catch (error) {
-      console.log("Error retrieving member names:", error);
+      console.log("Error retrieving member emails:", error);
     }
   };
 
@@ -58,14 +58,14 @@ const CreateTask = () => {
     console.log("Task Description:", taskDescription);
     console.log("Task Start Date:", taskStartDate);
     console.log("Task End Date:", taskEndDate);
-    console.log("Member Name:", memberName);
+    console.log("Member Email:", memberEmail);
 
     // Reset the state values to clear the input fields
     setTaskName("");
     setTaskDescription("");
     setTaskStartDate(new Date());
     setTaskEndDate(new Date());
-    setMemberName("");
+    setMemberEmail("");
   };
 
   return (
@@ -116,15 +116,15 @@ const CreateTask = () => {
           )}
         </View>
 
-        <Text style={styles.label}>Member Name</Text>
+        <Text style={styles.label}>Member Email</Text>
         <View style={styles.dropdownContainer}>
           <Picker
-            selectedValue={memberName}
+            selectedValue={memberEmail}
             style={styles.dropdown}
-            onValueChange={(value) => setMemberName(value)}
+            onValueChange={(value) => setMemberEmail(value)}
           >
-            {memberNames.map((member, index) => (
-              <Picker.Item key={index} label={member} value={member} />
+            {memberEmails.map((email, index) => (
+              <Picker.Item key={index} label={email} value={email} />
             ))}
           </Picker>
         </View>
