@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DrawerMenuScreen from "./DrawerMenu";
-import User from "./UserModel";
+import User from "./models/UserModel";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");

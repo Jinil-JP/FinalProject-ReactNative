@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Member from "./MemberModel";
-import User from "./UserModel";
+import Member from "./models/MemberModel";
+import User from "./models/UserModel";
 
 const CreateMember = () => {
   const [memberName, setMemberName] = useState("");

@@ -3,6 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Task from "./models/TaskModel";
 
 const CreateTask = () => {
   const [taskName, setTaskName] = useState("");
@@ -50,13 +51,29 @@ const CreateTask = () => {
     setShowEndDatePicker(true);
   };
 
-  const handleCreateTask = () => {
-    // Handle the logic to create a task with the entered details
-    console.log("Task Name:", taskName);
-    console.log("Task Description:", taskDescription);
-    console.log("Task Start Date:", taskStartDate);
-    console.log("Task End Date:", taskEndDate);
-    console.log("Member Name:", selectedMember.name);
+  const handleCreateTask = async () => {
+    // Generate a unique ID for the task (you can use a library like uuid to generate IDs)
+    const tasksData = await AsyncStorage.getItem("tasks");
+    const tasks = JSON.parse(tasksData);
+
+    const taskId = tasks.length + 1;
+
+    // Create a new task object
+    const newTask = new Task(
+      taskId,
+      taskName,
+      taskDescription,
+      taskStartDate,
+      taskEndDate,
+      false, // isCompleted
+      0, // hoursWorked
+      selectedMember
+    );
+
+    tasks.push(newTask);
+
+    // Store the updated tasks array in AsyncStorage
+    await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
 
     // Reset the state values to clear the input fields
     setTaskName("");
