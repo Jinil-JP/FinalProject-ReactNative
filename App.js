@@ -39,7 +39,16 @@ const LoginPage = () => {
       try {
         const users = await AsyncStorage.getItem("users");
         if (!users) {
-          const defaultUser = new User(0, "Admin@admin.com", "Admin@123", true);
+          const timestamp = Date.now().toString();
+          const randomNumber = Math.floor(Math.random() * 10000).toString();
+          const userId = timestamp + randomNumber;
+
+          const defaultUser = new User(
+            userId,
+            "Admin@admin.com",
+            "Admin@123",
+            true
+          );
           await AsyncStorage.setItem("users", JSON.stringify([defaultUser]));
         }
       } catch (error) {

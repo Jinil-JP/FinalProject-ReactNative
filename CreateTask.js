@@ -108,7 +108,9 @@ const CreateTask = () => {
       const tasks = JSON.parse(tasksData) || [];
 
       // Generate a unique ID for the task (you can use a library like uuid to generate IDs)
-      const taskId = tasks.length + 1;
+      const timestamp = Date.now().toString();
+      const randomNumber = Math.floor(Math.random() * 10000).toString();
+      const taskId = timestamp + randomNumber;
 
       // Create a new task object
       const newTask = new Task(
@@ -121,7 +123,9 @@ const CreateTask = () => {
         false, // isCompleted
         isPrerequisite,
         0, // hoursWorked
-        selectedMember
+        selectedMember,
+        "2023-07-10T23:15:20.720Z",
+        null
       );
 
       tasks.push(newTask);
@@ -244,7 +248,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#f1f1f1",
   },
   formContainer: {
-    flex: 1,
     backgroundColor: "#fff",
     margin: 20,
     padding: 20,

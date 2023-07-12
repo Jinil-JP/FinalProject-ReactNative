@@ -5,10 +5,41 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import AppBar from "./AppBar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons } from "@expo/vector-icons";
+
+class Task {
+  constructor(
+    id,
+    name,
+    description,
+    startDate,
+    endDate,
+    isStarted,
+    isCompleted,
+    isPrerequisite,
+    hoursWorked,
+    member,
+    taskStartTime,
+    taskEndTime
+  ) {
+    this.id = id;
+    this.name = name;
+    this.description = description;
+    this.startDate = startDate;
+    this.endDate = endDate;
+    this.isStarted = isStarted;
+    this.isCompleted = isCompleted;
+    this.isPrerequisite = isPrerequisite;
+    this.hoursWorked = hoursWorked;
+    this.member = member;
+    this.taskStartTime = taskStartTime;
+    this.taskEndTime = taskEndTime;
+  }
+}
 
 const DashboardScreen = () => {
   const [tasks, setTasks] = useState([]);
@@ -52,13 +83,13 @@ const DashboardScreen = () => {
 
       if (tasksData !== null) {
         let tasks = JSON.parse(tasksData);
-
+        console.log("currentUser.email");
+        console.log(currentUser);
         if (currentUser && !currentUser.isAdmin) {
-          tasks = tasks.filter(
-            (task) => task.member.email === currentUser.email
-          );
+          tasks = tasks.filter((task) => task.member.id === currentUser.id);
+          console.log(tasks);
         }
-
+        console.log(tasks);
         setTasks(tasks);
       }
     } catch (error) {
@@ -69,9 +100,53 @@ const DashboardScreen = () => {
   const renderTaskItem = ({ item }) => {
     const isAdmin = currentUser && currentUser.isAdmin;
 
-    const handleDelete = async (taskId) => {
+    const handleDelete = (taskId) => {
+      Alert.alert(
+        "Confirmation",
+        "Are you sure you want to delete this task?",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: () => deleteTask(taskId),
+          },
+        ]
+      );
+    };
+
+    const handleStartTask = (taskId) => {
+      Alert.alert("Confirmation", "Are you sure you want to start this task?", [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Start",
+          onPress: () => {
+            if (isAdmin) {
+              startTask(taskId);
+            } else {
+              completeTask(taskId);
+            }
+          },
+        },
+      ]);
+    };
+
+    const handleCompleteTask = (taskId) => {
+      Alert.alert(
+        "Confirmation",
+        "Are you sure you want to complete this task?",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Complete",
+            onPress: () => completeTask(taskId),
+          },
+        ]
+      );
+    };
+
+    const deleteTask = async (taskId) => {
       try {
-        // Remove the task from AsyncStorage
         let tasksData = await AsyncStorage.getItem("tasks");
         if (tasksData !== null) {
           let tasks = JSON.parse(tasksData);
@@ -79,33 +154,40 @@ const DashboardScreen = () => {
           await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
         }
 
-        // Update the tasks state to reflect the changes
         setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
       } catch (error) {
         console.log("Error deleting task:", error);
       }
     };
 
-    const handleStartTask = async (taskId) => {
+    const startTask = async (taskId) => {
       try {
-        // Update the isStarted property of the task in AsyncStorage
+        const startTime = new Date();
+
         let tasksData = await AsyncStorage.getItem("tasks");
         if (tasksData !== null) {
           let tasks = JSON.parse(tasksData);
           tasks = tasks.map((task) => {
             if (task.id === taskId) {
               task.isStarted = true;
+              task.taskStartTime = startTime;
             }
             return task;
           });
           await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
         }
 
-        // Update the tasks state to reflect the changes
         setTasks((prevTasks) =>
           prevTasks.map((task) => {
             if (task.id === taskId) {
-              return { ...task, isStarted: true };
+              return {
+                ...task,
+                isStarted: true,
+                taskStartTime: startTime,
+                taskEndTime: null,
+                hoursWorked: 0,
+                cost: 0,
+              };
             }
             return task;
           })
@@ -115,30 +197,51 @@ const DashboardScreen = () => {
       }
     };
 
-    const handleCompleteTask = async (taskId) => {
+    const completeTask = async (taskId) => {
       try {
-        // Update the isCompleted property of the task in AsyncStorage
+        const endTime = new Date();
+        const startTime = item.taskStartTime
+          ? new Date(item.taskStartTime)
+          : new Date();
+
+        const hoursWorked = Math.abs(endTime - startTime) / 36e5;
+
+        const cost = hoursWorked * item.member.hourlyRate;
+
         let tasksData = await AsyncStorage.getItem("tasks");
         if (tasksData !== null) {
           let tasks = JSON.parse(tasksData);
           tasks = tasks.map((task) => {
             if (task.id === taskId) {
               task.isCompleted = true;
+              task.taskStartTime = startTime;
+              task.taskEndTime = endTime;
+              task.hoursWorked = hoursWorked;
+              task.cost = cost;
             }
             return task;
           });
           await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
         }
 
-        // Update the tasks state to reflect the changes
         setTasks((prevTasks) =>
           prevTasks.map((task) => {
             if (task.id === taskId) {
-              return { ...task, isCompleted: true };
+              return {
+                ...task,
+                isCompleted: true,
+                taskStartTime: startTime,
+                taskEndTime: endTime,
+                hoursWorked,
+                cost,
+              };
             }
             return task;
           })
         );
+
+        const completedTask = tasks.find((task) => task.id === taskId);
+        console.log("Completed Task:", completedTask);
       } catch (error) {
         console.log("Error completing task:", error);
       }
@@ -146,6 +249,12 @@ const DashboardScreen = () => {
 
     return (
       <View style={styles.taskItem}>
+        {item.isPrerequisite && (
+          <View style={styles.prerequisiteIconContainer}>
+            <MaterialIcons name="label" size={24} color="#3498db" />
+          </View>
+        )}
+
         <View style={styles.detailsContainer}>
           <Text style={styles.taskTitle}>Task ID:</Text>
           <Text style={styles.taskName}>{item.id}</Text>
@@ -175,13 +284,7 @@ const DashboardScreen = () => {
           </Text>
         </View>
 
-        {item.isPrerequisite && (
-          <View style={styles.prerequisiteIconContainer}>
-            <MaterialIcons name="label" size={24} color="#3498db" />
-          </View>
-        )}
-
-        {isAdmin ? (
+        {isAdmin && !item.isCompleted ? (
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.button}
@@ -189,6 +292,7 @@ const DashboardScreen = () => {
             >
               <Text style={styles.buttonText}>Delete</Text>
             </TouchableOpacity>
+
             <TouchableOpacity
               style={styles.button}
               onPress={() => handleCompleteTask(item.id)}
@@ -198,18 +302,14 @@ const DashboardScreen = () => {
           </View>
         ) : (
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => handleStartTask(item.id)}
-            >
-              <Text style={styles.buttonText}>Start Task</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => handleCompleteTask(item.id)}
-            >
-              <Text style={styles.buttonText}>Complete Task</Text>
-            </TouchableOpacity>
+            {!item.isCompleted && (
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => handleStartTask(item.id)}
+              >
+                <Text style={styles.buttonText}>Start Task</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
       </View>

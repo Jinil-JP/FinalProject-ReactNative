@@ -34,11 +34,12 @@ const CreateMember = () => {
   };
 
   const handleCreateMember = async () => {
-    const id = memberArray.length + 1;
-    const userId = userArray.length + 1;
+    const timestamp = Date.now().toString();
+    const randomNumber = Math.floor(Math.random() * 10000).toString();
+    const userId = timestamp + randomNumber;
 
     const newMember = new Member(
-      id,
+      userId,
       memberName,
       memberEmail,
       hourlyRate,
@@ -130,7 +131,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#f1f1f1",
   },
   formContainer: {
-    flex: 1,
     backgroundColor: "#fff",
     margin: 20,
     padding: 20,
