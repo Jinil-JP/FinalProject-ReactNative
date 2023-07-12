@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
+import { View, Text, TextInput, Button, StyleSheet, Switch } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -14,6 +14,7 @@ const CreateTask = () => {
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [selectedMember, setSelectedMember] = useState({});
   const [members, setMembers] = useState([]);
+  const [isPrerequisiteEnabled, setIsPrerequisiteEnabled] = useState(false);
 
   useEffect(() => {
     retrieveMember();
@@ -51,11 +52,14 @@ const CreateTask = () => {
     setShowEndDatePicker(true);
   };
 
+  const togglePrerequisite = () => {
+    setIsPrerequisiteEnabled(!isPrerequisiteEnabled);
+  };
+
   const handleCreateTask = async () => {
     // Generate a unique ID for the task (you can use a library like uuid to generate IDs)
     const tasksData = await AsyncStorage.getItem("tasks");
-    const tasks = JSON.parse(tasksData);
-
+    const tasks = JSON.parse(tasksData) || [];
     const taskId = tasks.length + 1;
 
     // Create a new task object
@@ -67,7 +71,8 @@ const CreateTask = () => {
       taskEndDate,
       false, // isCompleted
       0, // hoursWorked
-      selectedMember
+      selectedMember,
+      isPrerequisiteEnabled
     );
 
     tasks.push(newTask);
@@ -81,6 +86,7 @@ const CreateTask = () => {
     setTaskStartDate(new Date());
     setTaskEndDate(new Date());
     setSelectedMember({});
+    setIsPrerequisiteEnabled(false);
   };
 
   return (
@@ -148,6 +154,15 @@ const CreateTask = () => {
           </Picker>
         </View>
 
+        <View style={styles.switchContainer}>
+          <Text style={styles.label}>Prerequisite Tasks</Text>
+          <View style={styles.switchMargin}></View>
+          <Switch
+            value={isPrerequisiteEnabled}
+            onValueChange={togglePrerequisite}
+          />
+        </View>
+
         <View style={styles.buttonContainer}>
           <Button title="Create Task" onPress={handleCreateTask} />
         </View>
@@ -197,6 +212,14 @@ const styles = StyleSheet.create({
   dropdown: {
     height: 40,
     paddingHorizontal: 10,
+  },
+  switchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  switchMargin:{
+      width : "40%"
   },
   buttonContainer: {
     marginTop: 10,

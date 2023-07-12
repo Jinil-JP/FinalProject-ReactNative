@@ -7,7 +7,8 @@ class Task {
     endDate,
     isCompleted,
     hoursWorked,
-    member
+    member,
+    isprerequisite
   ) {
     this.id = id;
     this.name = name;
@@ -17,5 +18,6 @@ class Task {
     this.isCompleted = isCompleted;
     this.hoursWorked = hoursWorked;
     this.member = member;
+    this.isprerequisite = isprerequisite
   }
 }
