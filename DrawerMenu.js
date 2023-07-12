@@ -105,11 +105,7 @@ const DrawerMenuScreen = ({ handleLogout, currentUser }) => {
         // Perform any necessary logout actions and navigate to the login screen
         break;
       default:
-        return (
-          <View style={styles.container}>
-            <Text style={styles.title}>Welcome to the Dashboard!</Text>
-          </View>
-        );
+        return <DashboardScreen />;
     }
   };
 

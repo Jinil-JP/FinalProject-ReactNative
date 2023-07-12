@@ -53,6 +53,8 @@ const LoginPage = () => {
   const handleLogin = async () => {
     try {
       const users = JSON.parse(await AsyncStorage.getItem("users"));
+
+      console.log(users);
       const user = users.find(
         (u) => u.email === email && u.password === password
       );

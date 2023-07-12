@@ -144,6 +144,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 10,
   },
+  emptyText: {
+    fontSize: 16,
+    textAlign: "center",
+    marginTop: 20,
+  },
 });
 
 export default DashboardScreen;
