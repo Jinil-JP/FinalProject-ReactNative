@@ -57,6 +57,7 @@ const DrawerMenuScreen = ({ handleLogout, currentUser }) => {
       >
         <Text style={styles.menuItemText}>Dashboard</Text>
       </TouchableOpacity>
+
       {currentUser && currentUser.isAdmin && (
         <>
           <TouchableOpacity

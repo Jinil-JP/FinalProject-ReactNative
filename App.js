@@ -22,7 +22,6 @@ const LoginPage = () => {
     const checkCurrentUser = async () => {
       try {
         const user = JSON.parse(await AsyncStorage.getItem("currentUser"));
-        console.log(user);
         if (user) {
           setIsLoggedIn(true);
           setCurrentUser(user);
@@ -54,11 +53,9 @@ const LoginPage = () => {
   const handleLogin = async () => {
     try {
       const users = JSON.parse(await AsyncStorage.getItem("users"));
-      console.log(users);
       const user = users.find(
         (u) => u.email === email && u.password === password
       );
-      console.log(user);
       if (user) {
         setIsLoggedIn(true);
         setCurrentUser(user);

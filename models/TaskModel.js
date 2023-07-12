@@ -1,3 +1,4 @@
+// TaskModel.js
 class Task {
   constructor(
     id,
@@ -19,3 +20,5 @@ class Task {
     this.member = member;
   }
 }
+
+export default Task;

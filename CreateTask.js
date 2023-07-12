@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Picker } from "@react-native-picker/picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Task from "./models/TaskModel";
@@ -8,12 +8,26 @@ import Task from "./models/TaskModel";
 const CreateTask = () => {
   const [taskName, setTaskName] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
-  const [taskStartDate, setTaskStartDate] = useState(new Date());
-  const [taskEndDate, setTaskEndDate] = useState(new Date());
+  const [taskStartDate, setTaskStartDate] = useState(null);
+  const [taskEndDate, setTaskEndDate] = useState(null);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [selectedMember, setSelectedMember] = useState({});
+  const [selectedMember, setSelectedMember] = useState("");
   const [members, setMembers] = useState([]);
+  const [validationError, setValidationError] = useState("");
+
+  const formatDate = (date) => {
+    const options = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    };
+
+    return date.toLocaleString("en-US", options);
+  };
 
   useEffect(() => {
     retrieveMember();
@@ -31,16 +45,18 @@ const CreateTask = () => {
     }
   };
 
-  const handleStartDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || taskStartDate;
+  const handleStartDateChange = (selectedDate) => {
+    if (selectedDate) {
+      setTaskStartDate(selectedDate);
+    }
     setShowStartDatePicker(false);
-    setTaskStartDate(currentDate);
   };
 
-  const handleEndDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || taskEndDate;
+  const handleEndDateChange = (selectedDate) => {
+    if (selectedDate) {
+      setTaskEndDate(selectedDate);
+    }
     setShowEndDatePicker(false);
-    setTaskEndDate(currentDate);
   };
 
   const showStartDatePickerModal = () => {
@@ -51,36 +67,70 @@ const CreateTask = () => {
     setShowEndDatePicker(true);
   };
 
+  const validateForm = () => {
+    if (
+      !taskName ||
+      !taskDescription ||
+      !taskStartDate ||
+      !taskEndDate ||
+      !selectedMember
+    ) {
+      setValidationError("All fields are required");
+      return false;
+    }
+
+    if (taskStartDate > taskEndDate) {
+      setValidationError("Start date cannot be greater than end date");
+      return false;
+    }
+
+    setValidationError("");
+    return true;
+  };
+
   const handleCreateTask = async () => {
-    // Generate a unique ID for the task (you can use a library like uuid to generate IDs)
-    const tasksData = await AsyncStorage.getItem("tasks");
-    const tasks = JSON.parse(tasksData);
+    if (!validateForm()) {
+      return;
+    }
 
-    const taskId = tasks.length + 1;
+    try {
+      // Retrieve tasks data from AsyncStorage
+      const tasksData = await AsyncStorage.getItem("tasks");
+      const tasks = JSON.parse(tasksData) || [];
 
-    // Create a new task object
-    const newTask = new Task(
-      taskId,
-      taskName,
-      taskDescription,
-      taskStartDate,
-      taskEndDate,
-      false, // isCompleted
-      0, // hoursWorked
-      selectedMember
-    );
+      // Generate a unique ID for the task (you can use a library like uuid to generate IDs)
+      const taskId = tasks.length + 1;
 
-    tasks.push(newTask);
+      // Create a new task object
+      const newTask = new Task(
+        taskId,
+        taskName,
+        taskDescription,
+        taskStartDate,
+        taskEndDate,
+        false, // isCompleted
+        0, // hoursWorked
+        selectedMember
+      );
 
-    // Store the updated tasks array in AsyncStorage
-    await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
+      tasks.push(newTask);
 
-    // Reset the state values to clear the input fields
-    setTaskName("");
-    setTaskDescription("");
-    setTaskStartDate(new Date());
-    setTaskEndDate(new Date());
-    setSelectedMember({});
+      // Store the updated tasks array in AsyncStorage
+      await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
+
+      // Reset the state values to clear the input fields
+      setTaskName("");
+      setTaskDescription("");
+      setTaskStartDate(null);
+      setTaskEndDate(null);
+      setSelectedMember("");
+      setValidationError("");
+
+      Alert.alert("Success", "Task created successfully");
+    } catch (error) {
+      console.log("Error retrieving or storing tasks:", error);
+      throw error; // re-throw the error to be caught by the outer try-catch block
+    }
   };
 
   return (
@@ -103,32 +153,35 @@ const CreateTask = () => {
         />
 
         <View style={styles.datePickerContainer}>
-          <Text style={styles.label}>Task Start Date</Text>
-          <Button
-            title="Select Start Date"
-            onPress={showStartDatePickerModal}
+          <Text style={styles.label}>Task Start Date and Time</Text>
+          <TextInput
+            style={styles.input}
+            onFocus={showStartDatePickerModal}
+            value={taskStartDate ? formatDate(taskStartDate) : ""}
+            placeholder="Select start date and time"
           />
-          {showStartDatePicker && (
-            <DateTimePicker
-              value={taskStartDate}
-              mode="date"
-              display="default"
-              onChange={handleStartDateChange}
-            />
-          )}
+          <DateTimePickerModal
+            isVisible={showStartDatePicker}
+            mode="datetime"
+            onConfirm={handleStartDateChange}
+            onCancel={() => setShowStartDatePicker(false)}
+          />
         </View>
 
         <View style={styles.datePickerContainer}>
-          <Text style={styles.label}>Task End Date</Text>
-          <Button title="Select End Date" onPress={showEndDatePickerModal} />
-          {showEndDatePicker && (
-            <DateTimePicker
-              value={taskEndDate}
-              mode="date"
-              display="default"
-              onChange={handleEndDateChange}
-            />
-          )}
+          <Text style={styles.label}>Task End Date and Time</Text>
+          <TextInput
+            style={styles.input}
+            onFocus={showEndDatePickerModal}
+            value={taskEndDate ? formatDate(taskEndDate) : ""}
+            placeholder="Select end date and time"
+          />
+          <DateTimePickerModal
+            isVisible={showEndDatePicker}
+            mode="datetime"
+            onConfirm={handleEndDateChange}
+            onCancel={() => setShowEndDatePicker(false)}
+          />
         </View>
 
         <Text style={styles.label}>Assigned Member</Text>
@@ -138,6 +191,7 @@ const CreateTask = () => {
             style={styles.dropdown}
             onValueChange={(value) => setSelectedMember(value)}
           >
+            <Picker.Item label="Select a member" value="" />
             {members.map((member, index) => (
               <Picker.Item
                 key={index}
@@ -147,6 +201,10 @@ const CreateTask = () => {
             ))}
           </Picker>
         </View>
+
+        {validationError ? (
+          <Text style={styles.error}>{validationError}</Text>
+        ) : null}
 
         <View style={styles.buttonContainer}>
           <Button title="Create Task" onPress={handleCreateTask} />
@@ -185,7 +243,7 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   datePickerContainer: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
   dropdownContainer: {
     borderColor: "#ccc",
@@ -200,6 +258,10 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginTop: 10,
+  },
+  error: {
+    color: "red",
+    marginBottom: 10,
   },
 });
 
