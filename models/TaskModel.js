@@ -6,7 +6,9 @@ class Task {
     description,
     startDate,
     endDate,
+    isStarted,
     isCompleted,
+    isPrerequisite,
     hoursWorked,
     member
   ) {
@@ -15,7 +17,9 @@ class Task {
     this.description = description;
     this.startDate = startDate;
     this.endDate = endDate;
+    this.isStarted = isStarted;
     this.isCompleted = isCompleted;
+    this.isPrerequisite = isPrerequisite;
     this.hoursWorked = hoursWorked;
     this.member = member;
   }

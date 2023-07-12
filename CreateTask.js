@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  Switch,
+} from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Picker } from "@react-native-picker/picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -15,6 +23,7 @@ const CreateTask = () => {
   const [selectedMember, setSelectedMember] = useState("");
   const [members, setMembers] = useState([]);
   const [validationError, setValidationError] = useState("");
+  const [isPrerequisite, setIsPrerequisite] = useState(false);
 
   const formatDate = (date) => {
     const options = {
@@ -108,7 +117,9 @@ const CreateTask = () => {
         taskDescription,
         taskStartDate,
         taskEndDate,
+        false,
         false, // isCompleted
+        isPrerequisite,
         0, // hoursWorked
         selectedMember
       );
@@ -124,6 +135,7 @@ const CreateTask = () => {
       setTaskStartDate(null);
       setTaskEndDate(null);
       setSelectedMember("");
+      setIsPrerequisite(false);
       setValidationError("");
 
       Alert.alert("Success", "Task created successfully");
@@ -202,6 +214,18 @@ const CreateTask = () => {
           </Picker>
         </View>
 
+        <View style={styles.rowContainer}>
+          <Text style={[styles.label, styles.prerequisiteLabel]}>
+            Prerequisite
+          </Text>
+          <Switch
+            value={isPrerequisite}
+            onValueChange={(value) => setIsPrerequisite(value)}
+            trackColor={{ false: "#f1f1f1", true: "#3498db" }}
+            thumbColor={isPrerequisite ? "#3498db" : "#f1f1f1"}
+          />
+        </View>
+
         {validationError ? (
           <Text style={styles.error}>{validationError}</Text>
         ) : null}
@@ -262,6 +286,15 @@ const styles = StyleSheet.create({
   error: {
     color: "red",
     marginBottom: 10,
+  },
+  rowContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  prerequisiteLabel: {
+    flex: 1,
+    fontWeight: "bold",
   },
 });
 
