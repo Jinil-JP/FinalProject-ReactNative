@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Member from "./MemberModel";
+import User from "./UserModel";
 
 const CreateMember = () => {
   const [memberName, setMemberName] = useState("");
@@ -9,6 +10,7 @@ const CreateMember = () => {
   const [hourlyRate, setHourlyRate] = useState("");
   const [password, setPassword] = useState("");
   const [memberArray, setMemberArray] = useState([]);
+  const [userArray, setUserArray] = useState([]);
 
   useEffect(() => {
     loadMemberArray();
@@ -16,7 +18,13 @@ const CreateMember = () => {
 
   const loadMemberArray = async () => {
     try {
+      const userArrayString = await AsyncStorage.getItem("users");
       const memberArrayString = await AsyncStorage.getItem("members");
+
+      if (userArrayString) {
+        setUserArray(JSON.parse(userArrayString));
+      }
+
       if (memberArrayString) {
         setMemberArray(JSON.parse(memberArrayString));
       }
@@ -27,6 +35,7 @@ const CreateMember = () => {
 
   const handleCreateMember = async () => {
     const id = memberArray.length + 1;
+    const userId = userArray.length + 1;
 
     const newMember = new Member(
       id,
@@ -36,11 +45,19 @@ const CreateMember = () => {
       password
     );
 
+    const newUser = new User(userId, memberEmail, password, false);
+
     try {
       const updatedMemberArray = [...memberArray, newMember];
       setMemberArray(updatedMemberArray);
 
+      const updatedUserArray = [...userArray, newUser];
+      setUserArray(updatedUserArray);
+
       await AsyncStorage.setItem("members", JSON.stringify(updatedMemberArray));
+      await AsyncStorage.setItem("users", JSON.stringify(updatedUserArray));
+
+      console.log(updatedUserArray);
 
       Alert.alert("Success", "Member created successfully");
 
@@ -97,6 +114,7 @@ const CreateMember = () => {
             onChangeText={(text) => setPassword(text)}
             value={password}
             placeholder="Enter password"
+            secureTextEntry
           />
         </View>
 

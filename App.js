@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,34 +6,87 @@ import {
   Button,
   StyleSheet,
   ImageBackground,
+  Alert,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import DrawerMenuScreen from "./DrawerMenu";
+import User from "./UserModel";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  const handleLogin = () => {
-    if (email === "Admin@admin.com" && password === "Admin@123") {
-      // Successful login
-      console.log("Login successful");
-      setIsLoggedIn(true);
-    } else {
-      // Failed login
-      console.log("Login failed");
-      setIsLoggedIn(false);
+  useEffect(() => {
+    const checkCurrentUser = async () => {
+      try {
+        const user = JSON.parse(await AsyncStorage.getItem("currentUser"));
+        console.log(user);
+        if (user) {
+          setIsLoggedIn(true);
+          setCurrentUser(user);
+        }
+      } catch (error) {
+        console.log("Error checking current user:", error);
+      }
+    };
+
+    checkCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    const initializeUsers = async () => {
+      try {
+        const users = await AsyncStorage.getItem("users");
+        if (!users) {
+          const defaultUser = new User(0, "Admin@admin.com", "Admin@123", true);
+          await AsyncStorage.setItem("users", JSON.stringify([defaultUser]));
+        }
+      } catch (error) {
+        console.log("Error initializing users:", error);
+      }
+    };
+
+    initializeUsers();
+  }, []);
+
+  const handleLogin = async () => {
+    try {
+      const users = JSON.parse(await AsyncStorage.getItem("users"));
+      console.log(users);
+      const user = users.find(
+        (u) => u.email === email && u.password === password
+      );
+      console.log(user);
+      if (user) {
+        setIsLoggedIn(true);
+        setCurrentUser(user);
+        await AsyncStorage.setItem("currentUser", JSON.stringify(user));
+      } else {
+        setIsLoggedIn(false);
+        setCurrentUser(null);
+        Alert.alert("Failure", "Please enter valid credentials");
+      }
+    } catch (error) {
+      console.log("Error retrieving users:", error);
     }
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setEmail("");
-    setPassword("");
+  const handleLogout = async () => {
+    try {
+      setIsLoggedIn(false);
+      setCurrentUser(null);
+      await AsyncStorage.removeItem("currentUser");
+    } catch (error) {
+      console.log("Error logging out:", error);
+    }
   };
 
   if (isLoggedIn) {
-    return <DrawerMenuScreen handleLogout={handleLogout} />;
+    return (
+      <DrawerMenuScreen handleLogout={handleLogout} currentUser={currentUser} />
+    );
   }
 
   return (
@@ -43,7 +96,7 @@ const LoginPage = () => {
       resizeMode="cover"
     >
       <View style={styles.formContainer}>
-        <Text style={styles.title}>Login!</Text>
+        <Text style={styles.title}>Project Management System</Text>
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -82,7 +135,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",

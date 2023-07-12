@@ -13,7 +13,7 @@ import CreateMember from "./CreateMember";
 import AppBar from "./AppBar";
 import DashboardScreen from "./DashboardScreen";
 
-const DrawerMenu = ({ handleLogout }) => {
+const DrawerMenuScreen = ({ handleLogout, currentUser }) => {
   const [selectedOption, setSelectedOption] = React.useState("");
   const drawerRef = React.useRef(null);
 
@@ -57,24 +57,28 @@ const DrawerMenu = ({ handleLogout }) => {
       >
         <Text style={styles.menuItemText}>Dashboard</Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.menuItem}
-        onPress={() => onMenuPress("member")}
-      >
-        <Text style={styles.menuItemText}>Member</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.menuItem}
-        onPress={() => onMenuPress("createTask")}
-      >
-        <Text style={styles.menuItemText}>Create Task</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.menuItem}
-        onPress={() => onMenuPress("createMember")}
-      >
-        <Text style={styles.menuItemText}>Create Member</Text>
-      </TouchableOpacity>
+      {currentUser && currentUser.isAdmin && (
+        <>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => onMenuPress("member")}
+          >
+            <Text style={styles.menuItemText}>Member</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => onMenuPress("createTask")}
+          >
+            <Text style={styles.menuItemText}>Create Task</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => onMenuPress("createMember")}
+          >
+            <Text style={styles.menuItemText}>Create Member</Text>
+          </TouchableOpacity>
+        </>
+      )}
       <TouchableOpacity
         style={styles.menuItem}
         onPress={() => onMenuPress("logout")}
@@ -120,11 +124,14 @@ const DrawerMenu = ({ handleLogout }) => {
         return "Create Member";
       case "logout":
         return "Logout";
-        break;
       default:
         return "Dashboard";
     }
   };
+
+  if (!currentUser) {
+    return null; // or render a loading screen or error message
+  }
 
   return (
     <DrawerLayoutAndroid
@@ -167,4 +174,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DrawerMenu;
+export default DrawerMenuScreen;
