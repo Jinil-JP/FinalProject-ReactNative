@@ -7,48 +7,13 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import AppBar from "./AppBar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons } from "@expo/vector-icons";
-
-class Task {
-  constructor(
-    id,
-    name,
-    description,
-    startDate,
-    endDate,
-    isStarted,
-    isCompleted,
-    isPrerequisite,
-    hoursWorked,
-    member,
-    taskStartTime,
-    taskEndTime
-  ) {
-    this.id = id;
-    this.name = name;
-    this.description = description;
-    this.startDate = startDate;
-    this.endDate = endDate;
-    this.isStarted = isStarted;
-    this.isCompleted = isCompleted;
-    this.isPrerequisite = isPrerequisite;
-    this.hoursWorked = hoursWorked;
-    this.member = member;
-    this.taskStartTime = taskStartTime;
-    this.taskEndTime = taskEndTime;
-  }
-}
 
 const DashboardScreen = () => {
   const [tasks, setTasks] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-
-  useEffect(() => {
-    retrieveCurrentUser();
-    retrieveTasks();
-  }, []);
+  const [loggedUser, setLoggedUser] = useState(null);
 
   const formatDate = (date) => {
     const options = {
@@ -65,12 +30,22 @@ const DashboardScreen = () => {
     return dateInFormat.toLocaleString("en-US", options);
   };
 
-  const retrieveCurrentUser = async () => {
-    try {
-      const currentUserData = await AsyncStorage.getItem("currentUser");
+  useEffect(() => {
+    retrieveLoggedUser();
+  }, []);
 
-      if (currentUserData) {
-        setCurrentUser(JSON.parse(currentUserData));
+  useEffect(() => {
+    if (loggedUser) {
+      retrieveTasks();
+    }
+  }, [loggedUser]);
+
+  const retrieveLoggedUser = async () => {
+    try {
+      console.log("Logged User");
+      const loggedUserData = await AsyncStorage.getItem("currentUser");
+      if (loggedUserData) {
+        setLoggedUser(JSON.parse(loggedUserData));
       }
     } catch (error) {
       console.log("Error retrieving current user:", error);
@@ -79,17 +54,13 @@ const DashboardScreen = () => {
 
   const retrieveTasks = async () => {
     try {
+      console.log("retrieveTasks");
       let tasksData = await AsyncStorage.getItem("tasks");
-
       if (tasksData !== null) {
         let tasks = JSON.parse(tasksData);
-        console.log("currentUser.email");
-        console.log(currentUser);
-        if (currentUser && !currentUser.isAdmin) {
-          tasks = tasks.filter((task) => task.member.id === currentUser.id);
-          console.log(tasks);
+        if (loggedUser && !loggedUser.isAdmin) {
+          tasks = tasks.filter((task) => loggedUser.id === task.member.id);
         }
-        console.log(tasks);
         setTasks(tasks);
       }
     } catch (error) {
@@ -98,7 +69,7 @@ const DashboardScreen = () => {
   };
 
   const renderTaskItem = ({ item }) => {
-    const isAdmin = currentUser && currentUser.isAdmin;
+    const isAdmin = loggedUser && loggedUser.isAdmin;
 
     const handleDelete = (taskId) => {
       Alert.alert(
@@ -241,7 +212,6 @@ const DashboardScreen = () => {
         );
 
         const completedTask = tasks.find((task) => task.id === taskId);
-        console.log("Completed Task:", completedTask);
       } catch (error) {
         console.log("Error completing task:", error);
       }

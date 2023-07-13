@@ -58,16 +58,12 @@ const CreateMember = () => {
       await AsyncStorage.setItem("members", JSON.stringify(updatedMemberArray));
       await AsyncStorage.setItem("users", JSON.stringify(updatedUserArray));
 
-      console.log(updatedUserArray);
-
       Alert.alert("Success", "Member created successfully");
 
       setMemberName("");
       setMemberEmail("");
       setHourlyRate("");
       setPassword("");
-
-      console.log("Member created and saved successfully");
     } catch (error) {
       console.log("Error creating member:", error);
     }
