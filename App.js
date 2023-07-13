@@ -43,12 +43,7 @@ const LoginPage = () => {
           const randomNumber = Math.floor(Math.random() * 10000).toString();
           const userId = timestamp + randomNumber;
 
-          const defaultUser = new User(
-            userId,
-            "Admin@admin.com",
-            "Admin@123",
-            true
-          );
+          const defaultUser = new User(userId, "Admin@admin.com", "1234", true);
           await AsyncStorage.setItem("users", JSON.stringify([defaultUser]));
         }
       } catch (error) {
@@ -64,7 +59,9 @@ const LoginPage = () => {
       const users = JSON.parse(await AsyncStorage.getItem("users"));
 
       const user = users.find(
-        (u) => u.email === email && u.password === password
+        (u) =>
+          u.email.toLowerCase() === email.toLowerCase() &&
+          u.password === password
       );
       if (user) {
         setIsLoggedIn(true);

@@ -42,7 +42,6 @@ const DashboardScreen = () => {
 
   const retrieveLoggedUser = async () => {
     try {
-      console.log("Logged User");
       const loggedUserData = await AsyncStorage.getItem("currentUser");
       if (loggedUserData) {
         setLoggedUser(JSON.parse(loggedUserData));
@@ -54,13 +53,13 @@ const DashboardScreen = () => {
 
   const retrieveTasks = async () => {
     try {
-      console.log("retrieveTasks");
       let tasksData = await AsyncStorage.getItem("tasks");
       if (tasksData !== null) {
         let tasks = JSON.parse(tasksData);
         if (loggedUser && !loggedUser.isAdmin) {
           tasks = tasks.filter((task) => loggedUser.id === task.member.id);
         }
+        console.log(tasks);
         setTasks(tasks);
       }
     } catch (error) {
@@ -92,11 +91,7 @@ const DashboardScreen = () => {
         {
           text: "Start",
           onPress: () => {
-            if (isAdmin) {
-              startTask(taskId);
-            } else {
-              completeTask(taskId);
-            }
+            startTask(taskId);
           },
         },
       ]);
@@ -135,19 +130,6 @@ const DashboardScreen = () => {
       try {
         const startTime = new Date();
 
-        let tasksData = await AsyncStorage.getItem("tasks");
-        if (tasksData !== null) {
-          let tasks = JSON.parse(tasksData);
-          tasks = tasks.map((task) => {
-            if (task.id === taskId) {
-              task.isStarted = true;
-              task.taskStartTime = startTime;
-            }
-            return task;
-          });
-          await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
-        }
-
         setTasks((prevTasks) =>
           prevTasks.map((task) => {
             if (task.id === taskId) {
@@ -155,14 +137,27 @@ const DashboardScreen = () => {
                 ...task,
                 isStarted: true,
                 taskStartTime: startTime,
-                taskEndTime: null,
-                hoursWorked: 0,
-                cost: 0,
               };
             }
             return task;
           })
         );
+
+        let tasksData = await AsyncStorage.getItem("tasks");
+        if (tasksData !== null) {
+          let tasks = JSON.parse(tasksData);
+          tasks = tasks.map((task) => {
+            if (task.id === taskId) {
+              return {
+                ...task,
+                isStarted: true,
+                taskStartTime: startTime,
+              };
+            }
+            return task;
+          });
+          await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
+        }
       } catch (error) {
         console.log("Error starting task:", error);
       }
@@ -212,6 +207,7 @@ const DashboardScreen = () => {
         );
 
         const completedTask = tasks.find((task) => task.id === taskId);
+        console.log("Completed Task:", completedTask);
       } catch (error) {
         console.log("Error completing task:", error);
       }
@@ -272,12 +268,21 @@ const DashboardScreen = () => {
           </View>
         ) : (
           <View style={styles.buttonContainer}>
-            {!item.isCompleted && (
+            {!item.isCompleted && !item.isStarted && (
               <TouchableOpacity
                 style={styles.button}
                 onPress={() => handleStartTask(item.id)}
               >
                 <Text style={styles.buttonText}>Start Task</Text>
+              </TouchableOpacity>
+            )}
+
+            {!item.isCompleted && item.isStarted && (
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => handleCompleteTask(item.id)}
+              >
+                <Text style={styles.buttonText}>Complete Task</Text>
               </TouchableOpacity>
             )}
           </View>
