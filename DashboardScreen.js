@@ -128,6 +128,24 @@ const DashboardScreen = () => {
 
     const startTask = async (taskId) => {
       try {
+        if (item.isPrerequisite) {
+          const pendingTask = tasks.filter(
+            (task) =>
+              task.member.id === loggedUser.id &&
+              task.isStarted &&
+              !task.isCompleted
+          );
+          console.log("Pending Task", pendingTask);
+
+          if (pendingTask.length > 0) {
+            Alert.alert(
+              "Tasks Pending",
+              "You cannot start this prerequisite task as there are pending tasks."
+            );
+            return;
+          }
+        }
+
         const startTime = new Date();
 
         setTasks((prevTasks) =>
