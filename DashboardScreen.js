@@ -6,14 +6,18 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
+  Modal,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons } from "@expo/vector-icons";
+import TaskDetailsModel from "./TaskDetailsModel";
 
 const DashboardScreen = () => {
   const [tasks, setTasks] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loggedUser, setLoggedUser] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const formatDate = (date) => {
     const options = {
@@ -66,6 +70,16 @@ const DashboardScreen = () => {
     }
   };
 
+  const handleTaskItemPress = (taskId) => {
+    const task = tasks.find((task) => task.id === taskId);
+    setSelectedTask(task);
+    setIsModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+  };
+
   const renderTaskItem = ({ item }) => {
     const isAdmin = loggedUser && loggedUser.isAdmin;
 
@@ -108,6 +122,12 @@ const DashboardScreen = () => {
           },
         ]
       );
+    };
+
+    const handleTaskItemPress = (taskId) => {
+      const task = tasks.find((task) => task.id === taskId);
+      setSelectedTask(task);
+      setIsModalVisible(true);
     };
 
     const deleteTask = async (taskId) => {
@@ -230,80 +250,82 @@ const DashboardScreen = () => {
     };
 
     return (
-      <View style={styles.taskItem}>
-        {item.isPrerequisite && (
-          <View style={styles.prerequisiteIconContainer}>
-            <MaterialIcons name="label" size={24} color="#3498db" />
+      <TouchableOpacity onPress={() => handleTaskItemPress(item.id)}>
+        <View style={styles.taskItem}>
+          {item.isPrerequisite && (
+            <View style={styles.prerequisiteIconContainer}>
+              <MaterialIcons name="label" size={24} color="#3498db" />
+            </View>
+          )}
+
+          <View style={styles.detailsContainer}>
+            <Text style={styles.taskTitle}>Task ID:</Text>
+            <Text style={styles.taskName}>{item.id}</Text>
           </View>
-        )}
 
-        <View style={styles.detailsContainer}>
-          <Text style={styles.taskTitle}>Task ID:</Text>
-          <Text style={styles.taskName}>{item.id}</Text>
-        </View>
-
-        <View style={styles.detailsContainer}>
-          <Text style={styles.taskTitle}>Task Name:</Text>
-          <Text style={styles.taskName}>{item.name}</Text>
-        </View>
-
-        <View style={styles.detailsContainer}>
-          <Text style={styles.taskTitle}>Task Description:</Text>
-          <Text style={styles.taskDescription}>{item.description}</Text>
-        </View>
-
-        <View style={styles.detailsContainer}>
-          <Text style={styles.taskTitle}>Start Date:</Text>
-          <Text style={styles.taskDates}>
-            {formatDate(item.startDate) ? formatDate(item.startDate) : "N/A"}
-          </Text>
-        </View>
-
-        <View style={styles.detailsContainer}>
-          <Text style={styles.taskTitle}>End Date:</Text>
-          <Text style={styles.taskDates}>
-            {formatDate(item.endDate) ? formatDate(item.endDate) : "N/A"}
-          </Text>
-        </View>
-
-        {isAdmin && !item.isCompleted ? (
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => handleDelete(item.id)}
-            >
-              <Text style={styles.buttonText}>Delete</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => handleCompleteTask(item.id)}
-            >
-              <Text style={styles.buttonText}>Complete Task</Text>
-            </TouchableOpacity>
+          <View style={styles.detailsContainer}>
+            <Text style={styles.taskTitle}>Task Name:</Text>
+            <Text style={styles.taskName}>{item.name}</Text>
           </View>
-        ) : (
-          <View style={styles.buttonContainer}>
-            {!item.isCompleted && !item.isStarted && (
+
+          <View style={styles.detailsContainer}>
+            <Text style={styles.taskTitle}>Task Description:</Text>
+            <Text style={styles.taskDescription}>{item.description}</Text>
+          </View>
+
+          <View style={styles.detailsContainer}>
+            <Text style={styles.taskTitle}>Start Date:</Text>
+            <Text style={styles.taskDates}>
+              {formatDate(item.startDate) ? formatDate(item.startDate) : "N/A"}
+            </Text>
+          </View>
+
+          <View style={styles.detailsContainer}>
+            <Text style={styles.taskTitle}>End Date:</Text>
+            <Text style={styles.taskDates}>
+              {formatDate(item.endDate) ? formatDate(item.endDate) : "N/A"}
+            </Text>
+          </View>
+
+          {isAdmin && !item.isCompleted ? (
+            <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={styles.button}
-                onPress={() => handleStartTask(item.id)}
+                onPress={() => handleDelete(item.id)}
               >
-                <Text style={styles.buttonText}>Start Task</Text>
+                <Text style={styles.buttonText}>Delete</Text>
               </TouchableOpacity>
-            )}
 
-            {!item.isCompleted && item.isStarted && (
               <TouchableOpacity
                 style={styles.button}
                 onPress={() => handleCompleteTask(item.id)}
               >
                 <Text style={styles.buttonText}>Complete Task</Text>
               </TouchableOpacity>
-            )}
-          </View>
-        )}
-      </View>
+            </View>
+          ) : (
+            <View style={styles.buttonContainer}>
+              {!item.isCompleted && !item.isStarted && (
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => handleStartTask(item.id)}
+                >
+                  <Text style={styles.buttonText}>Start Task</Text>
+                </TouchableOpacity>
+              )}
+
+              {!item.isCompleted && item.isStarted && (
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => handleCompleteTask(item.id)}
+                >
+                  <Text style={styles.buttonText}>Complete Task</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -322,6 +344,9 @@ const DashboardScreen = () => {
           />
         )}
       </View>
+      <Modal visible={isModalVisible} animationType="slide">
+        <TaskDetailsModel task={selectedTask} closeModal={closeModal} />
+      </Modal>
     </View>
   );
 };
@@ -393,6 +418,33 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 5,
     right: 5,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f1f1f1",
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalDescription: {
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  closeButton: {
+    marginTop: 20,
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: "#3498db",
+  },
+  closeButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });
 
