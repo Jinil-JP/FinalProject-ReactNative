@@ -59,7 +59,6 @@ const DashboardScreen = () => {
         if (loggedUser && !loggedUser.isAdmin) {
           tasks = tasks.filter((task) => loggedUser.id === task.member.id);
         }
-        console.log(tasks);
         setTasks(tasks);
       }
     } catch (error) {
@@ -135,7 +134,6 @@ const DashboardScreen = () => {
               task.isStarted &&
               !task.isCompleted
           );
-          console.log("Pending Task", pendingTask);
 
           if (pendingTask.length > 0) {
             Alert.alert(
