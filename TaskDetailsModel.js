@@ -56,16 +56,18 @@ const TaskDetailsModal = ({ task, closeModal }) => {
               {task?.isPrerequisite ? "Yes" : "No"}
             </Text>
           </View>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Hours Worked:</Text>
-            <Text style={styles.detailText}>
-              {!task?.isCompleted
-                ? `${(
-                    Math.abs(new Date() - new Date(task?.startDate)) / 36e5
-                  ).toFixed(3)} Hour`
-                : `${task?.hoursWorked.toFixed(3)} Hour`}
-            </Text>
-          </View>
+          {task?.isStarted && (
+            <View style={styles.detailItem}>
+              <Text style={styles.detailLabel}>Hours Worked:</Text>
+              <Text style={styles.detailText}>
+                {!task?.isCompleted
+                  ? `${(
+                      Math.abs(new Date() - new Date(task?.startDate)) / 36e5
+                    ).toFixed(3)} Hour`
+                  : `${task?.hoursWorked.toFixed(3)} Hour`}
+              </Text>
+            </View>
+          )}
           {task?.isCompleted && (
             <View style={styles.detailItem}>
               <Text style={styles.detailLabel}>Cost of Project</Text>
