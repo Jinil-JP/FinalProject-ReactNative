@@ -51,19 +51,7 @@ const TaskDetailsModal = ({ task, closeModal }) => {
             </Text>
           </View>
           <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Is Started:</Text>
-            <Text style={styles.detailText}>
-              {task?.isStarted ? "Yes" : "No"}
-            </Text>
-          </View>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Is Completed:</Text>
-            <Text style={styles.detailText}>
-              {task?.isCompleted ? "Yes" : "No"}
-            </Text>
-          </View>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Is Prerequisite:</Text>
+            <Text style={styles.detailLabel}>Prerequisite</Text>
             <Text style={styles.detailText}>
               {task?.isPrerequisite ? "Yes" : "No"}
             </Text>
@@ -72,6 +60,14 @@ const TaskDetailsModal = ({ task, closeModal }) => {
             <Text style={styles.detailLabel}>Hours Worked:</Text>
             <Text style={styles.detailText}>{task?.hoursWorked}</Text>
           </View>
+          {task?.isCompleted && (
+            <View style={styles.detailItem}>
+              <Text style={styles.detailLabel}>Cost of Project</Text>
+              <Text style={styles.detailText}>
+                {task?.hoursWorked * task?.member?.hourlyRate}
+              </Text>
+            </View>
+          )}
         </View>
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Task Member Details</Text>
@@ -82,6 +78,14 @@ const TaskDetailsModal = ({ task, closeModal }) => {
           <View style={styles.detailItem}>
             <Text style={styles.detailLabel}>Member Name:</Text>
             <Text style={styles.detailText}>{task?.member?.name}</Text>
+          </View>
+          <View style={styles.detailItem}>
+            <Text style={styles.detailLabel}>Member Email:</Text>
+            <Text style={styles.detailText}>{task?.member?.email}</Text>
+          </View>
+          <View style={styles.detailItem}>
+            <Text style={styles.detailLabel}>Member Hourly Rate:</Text>
+            <Text style={styles.detailText}>{task?.member?.hourlyRate}</Text>
           </View>
         </View>
       </View>

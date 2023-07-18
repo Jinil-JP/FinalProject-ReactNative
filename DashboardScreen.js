@@ -243,7 +243,6 @@ const DashboardScreen = () => {
         );
 
         const completedTask = tasks.find((task) => task.id === taskId);
-        console.log("Completed Task:", completedTask);
       } catch (error) {
         console.log("Error completing task:", error);
       }
