@@ -21,7 +21,7 @@ const TaskDetailsModal = ({ task, closeModal }) => {
   return (
     <View style={styles.modalContainer}>
       <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
-        <MaterialIcons name="close" size={24} color="#fff" />
+        <MaterialIcons name="close" size={24} color="#3498db" />
       </TouchableOpacity>
       <View style={styles.modalContent}>
         <View style={styles.sectionContainer}>
@@ -58,13 +58,20 @@ const TaskDetailsModal = ({ task, closeModal }) => {
           </View>
           <View style={styles.detailItem}>
             <Text style={styles.detailLabel}>Hours Worked:</Text>
-            <Text style={styles.detailText}>{task?.hoursWorked}</Text>
+            <Text style={styles.detailText}>
+              {!task?.isCompleted
+                ? `${(
+                    Math.abs(new Date() - new Date(task?.startDate)) / 36e5
+                  ).toFixed(3)} Hour`
+                : `${task?.hoursWorked.toFixed(3)} Hour`}
+            </Text>
           </View>
           {task?.isCompleted && (
             <View style={styles.detailItem}>
               <Text style={styles.detailLabel}>Cost of Project</Text>
               <Text style={styles.detailText}>
-                {task?.hoursWorked * task?.member?.hourlyRate}
+                {(task?.hoursWorked * task?.member?.hourlyRate).toFixed(3) +
+                  " CAD"}
               </Text>
             </View>
           )}
@@ -105,8 +112,8 @@ const styles = StyleSheet.create({
     right: 10,
     zIndex: 1,
     padding: 10,
-    borderRadius: 50,
-    backgroundColor: "#3498db",
+    // borderRadius: 50,
+    // backgroundColor: "#3498db",
   },
   modalContent: {
     flex: 1,

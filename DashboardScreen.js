@@ -249,7 +249,10 @@ const DashboardScreen = () => {
     };
 
     return (
-      <TouchableOpacity onPress={() => handleTaskItemPress(item.id)}>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => handleTaskItemPress(item.id)}
+      >
         <View style={styles.taskItem}>
           {item.isPrerequisite && (
             <View style={styles.prerequisiteIconContainer}>
