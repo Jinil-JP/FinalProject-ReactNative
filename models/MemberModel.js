@@ -1,6 +1,6 @@
 class Member {
-  constructor(id, name, email, hourlyRate, password) {
-    this.id = id;
+  constructor(userId, name, email, hourlyRate, password) {
+    this.userId = userId;
     this.name = name;
     this.email = email;
     this.hourlyRate = hourlyRate;

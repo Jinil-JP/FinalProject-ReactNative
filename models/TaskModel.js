@@ -1,7 +1,7 @@
 // TaskModel.js
 class Task {
   constructor(
-    id,
+    taskId,
     name,
     description,
     startDate,
@@ -14,7 +14,7 @@ class Task {
     taskStartTime,
     taskEndTime
   ) {
-    this.id = id;
+    this.taskId = taskId;
     this.name = name;
     this.description = description;
     this.startDate = startDate;

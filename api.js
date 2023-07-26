@@ -21,7 +21,7 @@ const fetchMembers = async () => {
     const membersArray = data.map(
       (memberData) =>
         new Member(
-          memberData._id,
+          memberData.userId,
           memberData.name,
           memberData.email,
           memberData.hourlyRate,
@@ -36,4 +36,27 @@ const fetchMembers = async () => {
   }
 };
 
-export { fetchMembers };
+const deleteMember = async (userId) => {
+  try {
+    const DELETE_URL = `${BASE_URL}delete_member`;
+    const response = await fetch(DELETE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to delete member from the API.");
+    }
+
+    const data = await response.json();
+    return data.message;
+  } catch (error) {
+    console.error("Error deleting member:", error.message);
+    throw error;
+  }
+};
+
+export { fetchMembers, deleteMember };

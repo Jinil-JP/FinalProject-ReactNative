@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Member from "./models/MemberModel";
-import User from "./models/UserModel";
 
 const CreateMember = () => {
   const [memberName, setMemberName] = useState("");
@@ -34,30 +32,7 @@ const CreateMember = () => {
   };
 
   const handleCreateMember = async () => {
-    const timestamp = Date.now().toString();
-    const randomNumber = Math.floor(Math.random() * 10000).toString();
-    const userId = timestamp + randomNumber;
-
-    const newMember = new Member(
-      userId,
-      memberName,
-      memberEmail,
-      hourlyRate,
-      password
-    );
-
-    const newUser = new User(userId, memberEmail, password, false);
-
     try {
-      const updatedMemberArray = [...memberArray, newMember];
-      setMemberArray(updatedMemberArray);
-
-      const updatedUserArray = [...userArray, newUser];
-      setUserArray(updatedUserArray);
-
-      await AsyncStorage.setItem("members", JSON.stringify(updatedMemberArray));
-      await AsyncStorage.setItem("users", JSON.stringify(updatedUserArray));
-
       Alert.alert("Success", "Member created successfully");
 
       setMemberName("");

@@ -6,8 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { fetchMembers } from "./api";
+import { fetchMembers, deleteMember } from "./api";
 
 const Members = () => {
   const [members, setMembers] = useState([]);
@@ -23,24 +22,14 @@ const Members = () => {
     console.log(membersData);
   };
 
-  const handleDeleteMember = async (email) => {
-    try {
-      const updatedMembers = members.filter((member) => member.email !== email);
-      setMembers(updatedMembers);
-      await AsyncStorage.setItem("members", JSON.stringify(updatedMembers));
-    } catch (error) {
-      console.log("Error deleting member:", error);
-    }
-  };
-
   const renderMemberItem = ({ item }) => {
     const handleDeleteMember = async () => {
       try {
-        const updatedMembers = members.filter(
-          (member) => member.email !== item.email
-        );
-        setMembers(updatedMembers);
-        await AsyncStorage.setItem("members", JSON.stringify(updatedMembers));
+        const msg = await deleteMember(item.userId);
+        if (!msg) {
+          console.log(msg);
+          setMembers(members.filter((member) => member.userId !== item.userId));
+        }
       } catch (error) {
         console.log("Error deleting member:", error);
       }

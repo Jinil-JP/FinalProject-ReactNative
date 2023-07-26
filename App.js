@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DrawerMenuScreen from "./DrawerMenu";
-import User from "./models/UserModel";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -32,26 +31,6 @@ const LoginPage = () => {
     };
 
     checkCurrentUser();
-  }, []);
-
-  useEffect(() => {
-    const initializeUsers = async () => {
-      try {
-        const users = await AsyncStorage.getItem("users");
-        if (!users) {
-          const timestamp = Date.now().toString();
-          const randomNumber = Math.floor(Math.random() * 10000).toString();
-          const userId = timestamp + randomNumber;
-
-          const defaultUser = new User(userId, "Admin@admin.com", "1234", true);
-          await AsyncStorage.setItem("users", JSON.stringify([defaultUser]));
-        }
-      } catch (error) {
-        console.log("Error initializing users:", error);
-      }
-    };
-
-    initializeUsers();
   }, []);
 
   const handleLogin = async () => {
