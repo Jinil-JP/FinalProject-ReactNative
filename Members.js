@@ -6,26 +6,21 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-import AppBar from "./AppBar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { fetchMembers } from "./api";
 
 const Members = () => {
   const [members, setMembers] = useState([]);
 
   useEffect(() => {
-    retrieveMemberDetails();
+    retrieveMembersData();
   }, []);
 
-  const retrieveMemberDetails = async () => {
-    try {
-      const memberData = await AsyncStorage.getItem("members");
-      if (memberData !== null) {
-        const parsedMembers = JSON.parse(memberData);
-        setMembers(parsedMembers);
-      }
-    } catch (error) {
-      console.log("Error retrieving member details:", error);
-    }
+  const retrieveMembersData = async () => {
+    const membersData = await fetchMembers();
+    setMembers(membersData);
+
+    console.log(membersData);
   };
 
   const handleDeleteMember = async (email) => {
