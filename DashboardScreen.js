@@ -57,8 +57,8 @@ const DashboardScreen = () => {
 
   const retrieveTasks = async () => {
     try {
-      const currentUserId = 6;
-      const tasksData = await fetchTasks(currentUserId);
+      console.log(loggedUser.userId);
+      const tasksData = await fetchTasks(loggedUser.userId);
       setTasks(tasksData);
     } catch (error) {
       console.log("Error retrieving tasks:", error);

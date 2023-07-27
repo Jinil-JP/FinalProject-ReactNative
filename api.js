@@ -26,6 +26,34 @@ const createUser = async (userData) => {
   }
 };
 
+const login = async (email, password) => {
+  try {
+    console.log(email);
+    console.log(password);
+    const LOGIN_URL = `${BASE_URL}login`;
+    const response = await fetch(LOGIN_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+      }),
+    });
+
+    const data = await response.json();
+    console.log(data);
+    if (response.status === 200) {
+      return new Member(data.userId, data.name, data.email, data.isAdmin);
+    } else {
+      console.error("Error Failure user:", error.message);
+    }
+  } catch (error) {
+    console.log("Error during login:", error);
+  }
+};
+
 const fetchMembers = async () => {
   try {
     const response = await fetch(`${BASE_URL}members`, {
@@ -107,7 +135,6 @@ const createTask = async (taskData) => {
 const fetchTasks = async (currentUserId) => {
   try {
     const TASKS_URL = `${BASE_URL}tasks`;
-    console.log(TASKS_URL);
     const response = await fetch(TASKS_URL, {
       method: "POST", // Keep the method as POST
       headers: {
@@ -146,9 +173,6 @@ const fetchTasks = async (currentUserId) => {
         )
     );
 
-    console.log("tasksArray");
-    console.log(tasksArray);
-    console.log("tasksArray");
     return tasksArray;
   } catch (error) {
     console.error("Error fetching tasks:", error.message);
@@ -156,4 +180,11 @@ const fetchTasks = async (currentUserId) => {
   }
 };
 
-export { createUser, fetchTasks, fetchMembers, deleteMember, createTask };
+export {
+  createUser,
+  login,
+  fetchTasks,
+  fetchMembers,
+  deleteMember,
+  createTask,
+};

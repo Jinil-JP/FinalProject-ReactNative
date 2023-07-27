@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DrawerMenuScreen from "./DrawerMenu";
+import { login } from "./api";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -35,13 +36,8 @@ const LoginPage = () => {
 
   const handleLogin = async () => {
     try {
-      const users = JSON.parse(await AsyncStorage.getItem("users"));
+      const user = await login(email.toLowerCase(), password);
 
-      const user = users.find(
-        (u) =>
-          u.email.toLowerCase() === email.toLowerCase() &&
-          u.password === password
-      );
       if (user) {
         setIsLoggedIn(true);
         setCurrentUser(user);
