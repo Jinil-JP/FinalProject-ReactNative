@@ -1,5 +1,5 @@
 class Member {
-  constructor(userId, name, email, isAdmin = false, hourlyRate, password) {
+  constructor(userId, name, email, hourlyRate, password, isAdmin = false) {
     this.userId = userId;
     this.name = name;
     this.email = email;

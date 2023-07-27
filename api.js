@@ -19,7 +19,7 @@ const createUser = async (userData) => {
     }
 
     const data = await response.json();
-    return data; // The response from the server (user data without password)
+    return data;
   } catch (error) {
     console.error("Error creating user:", error.message);
     throw error;
@@ -28,8 +28,6 @@ const createUser = async (userData) => {
 
 const login = async (email, password) => {
   try {
-    console.log(email);
-    console.log(password);
     const LOGIN_URL = `${BASE_URL}login`;
     const response = await fetch(LOGIN_URL, {
       method: "POST",
@@ -43,9 +41,15 @@ const login = async (email, password) => {
     });
 
     const data = await response.json();
-    console.log(data);
     if (response.status === 200) {
-      return new Member(data.userId, data.name, data.email, data.isAdmin);
+      return new Member(
+        data.userId,
+        data.name,
+        data.email,
+        data.hourlyRate,
+        data.password,
+        data.isAdmin
+      );
     } else {
       console.error("Error Failure user:", error.message);
     }
@@ -125,7 +129,7 @@ const createTask = async (taskData) => {
     }
 
     const data = await response.json();
-    return data; // The response from the server (created task data)
+    return data;
   } catch (error) {
     console.error("Error creating task:", error.message);
     throw error;
@@ -136,11 +140,11 @@ const fetchTasks = async (currentUserId) => {
   try {
     const TASKS_URL = `${BASE_URL}tasks`;
     const response = await fetch(TASKS_URL, {
-      method: "POST", // Keep the method as POST
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ currentUserId }), // Pass currentUserId as the body parameter
+      body: JSON.stringify({ currentUserId }),
     });
 
     if (!response.ok) {
@@ -149,33 +153,56 @@ const fetchTasks = async (currentUserId) => {
 
     const tasksWithSelectedMember = await response.json();
 
-    const tasksArray = tasksWithSelectedMember.map(
-      (taskData) =>
-        new Task(
-          taskData.taskId,
-          taskData.name,
-          taskData.description,
-          taskData.startDate,
-          taskData.endDate,
-          taskData.isStarted,
-          taskData.isCompleted,
-          taskData.isPrerequisite,
-          taskData.hoursWorked,
-          new Member(
-            taskData.selectedMember.userId,
-            taskData.selectedMember.name,
-            taskData.selectedMember.email,
-            taskData.selectedMember.hourlyRate,
-            taskData.selectedMember.password
-          ),
-          taskData.taskStartTime,
-          taskData.taskEndTime
-        )
-    );
+    const tasksArray = tasksWithSelectedMember.map((taskData) => {
+      return new Task(
+        taskData.taskId,
+        taskData.name,
+        taskData.description,
+        taskData.startDate,
+        taskData.endDate,
+        taskData.isStarted,
+        taskData.isCompleted,
+        taskData.isPrerequisite,
+        taskData.hoursWorked,
+        new Member(
+          taskData.selectedMember.userId,
+          taskData.selectedMember.name,
+          taskData.selectedMember.email,
+          taskData.selectedMember.hourlyRate,
+          taskData.selectedMember.password,
+          taskData.selectedMember.isAdmin
+        ),
+        taskData.taskStartTime,
+        taskData.taskEndTime
+      );
+    });
 
     return tasksArray;
   } catch (error) {
     console.error("Error fetching tasks:", error.message);
+    throw error;
+  }
+};
+
+const deleteTask = async (taskId) => {
+  try {
+    const DELETE_URL = `${BASE_URL}delete_task`;
+    const response = await fetch(DELETE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id: taskId }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to delete task from the API.");
+    }
+
+    const data = await response.json();
+    return data.message;
+  } catch (error) {
+    console.error("Error deleting task:", error.message);
     throw error;
   }
 };
@@ -187,4 +214,5 @@ export {
   fetchMembers,
   deleteMember,
   createTask,
+  deleteTask,
 };

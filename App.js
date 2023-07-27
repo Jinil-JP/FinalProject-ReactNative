@@ -11,27 +11,20 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DrawerMenuScreen from "./DrawerMenu";
 import { login } from "./api";
+import { getCurrentUser } from "./Constant";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    const checkCurrentUser = async () => {
-      try {
-        const user = JSON.parse(await AsyncStorage.getItem("currentUser"));
-        if (user) {
-          setIsLoggedIn(true);
-          setCurrentUser(user);
-        }
-      } catch (error) {
-        console.log("Error checking current user:", error);
-      }
+    const fetchCurrentUser = async () => {
+      const user = await getCurrentUser();
+      setCurrentUser(user);
     };
 
-    checkCurrentUser();
+    fetchCurrentUser();
   }, []);
 
   const handleLogin = async () => {
@@ -39,11 +32,10 @@ const LoginPage = () => {
       const user = await login(email.toLowerCase(), password);
 
       if (user) {
-        setIsLoggedIn(true);
-        setCurrentUser(user);
         await AsyncStorage.setItem("currentUser", JSON.stringify(user));
+        setCurrentUser(user);
       } else {
-        setIsLoggedIn(false);
+        await AsyncStorage.removeItem("currentUser");
         setCurrentUser(null);
         Alert.alert("Failure", "Please enter valid credentials");
       }
@@ -54,15 +46,15 @@ const LoginPage = () => {
 
   const handleLogout = async () => {
     try {
-      setIsLoggedIn(false);
-      setCurrentUser(null);
       await AsyncStorage.removeItem("currentUser");
+      setCurrentUser(null);
     } catch (error) {
       console.log("Error logging out:", error);
     }
   };
 
-  if (isLoggedIn) {
+  console.log(currentUser);
+  if (currentUser) {
     return (
       <DrawerMenuScreen handleLogout={handleLogout} currentUser={currentUser} />
     );

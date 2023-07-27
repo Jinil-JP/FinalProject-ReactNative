@@ -11,11 +11,12 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons } from "@expo/vector-icons";
 import TaskDetailsModel from "./TaskDetailsModel";
-import { fetchTasks } from "./api";
+import { fetchTasks, deleteTask } from "./api";
+import { getCurrentUser } from "./Constant";
 
 const DashboardScreen = () => {
   const [tasks, setTasks] = useState([]);
-  const [loggedUser, setLoggedUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -35,30 +36,23 @@ const DashboardScreen = () => {
   };
 
   useEffect(() => {
-    retrieveLoggedUser();
+    const fetchCurrentUser = async () => {
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+    };
+
+    fetchCurrentUser();
   }, []);
 
   useEffect(() => {
-    if (loggedUser) {
+    if (currentUser) {
       retrieveTasks();
     }
-  }, [loggedUser]);
-
-  const retrieveLoggedUser = async () => {
-    try {
-      const loggedUserData = await AsyncStorage.getItem("currentUser");
-      if (loggedUserData) {
-        setLoggedUser(JSON.parse(loggedUserData));
-      }
-    } catch (error) {
-      console.log("Error retrieving current user:", error);
-    }
-  };
+  }, [currentUser]);
 
   const retrieveTasks = async () => {
     try {
-      console.log(loggedUser.userId);
-      const tasksData = await fetchTasks(loggedUser.userId);
+      const tasksData = await fetchTasks(currentUser.userId);
       setTasks(tasksData);
     } catch (error) {
       console.log("Error retrieving tasks:", error);
@@ -76,7 +70,7 @@ const DashboardScreen = () => {
   };
 
   const renderTaskItem = ({ item }) => {
-    const isAdmin = loggedUser && loggedUser.isAdmin;
+    const isAdmin = currentUser && currentUser.isAdmin;
 
     const handleDelete = (taskId) => {
       Alert.alert(
@@ -87,7 +81,17 @@ const DashboardScreen = () => {
           {
             text: "Delete",
             style: "destructive",
-            onPress: () => deleteTask(taskId),
+            onPress: async () => {
+              const msg = await deleteTask(taskId);
+              if (msg) {
+                Alert.alert("Success", msg);
+                setTasks((tasks) =>
+                  tasks.filter((task) => task.taskId !== taskId)
+                );
+              } else {
+                Alert.alert("Error", "Failed to delete member.");
+              }
+            },
           },
         ]
       );
@@ -125,27 +129,12 @@ const DashboardScreen = () => {
       setIsModalVisible(true);
     };
 
-    const deleteTask = async (taskId) => {
-      try {
-        let tasksData = await AsyncStorage.getItem("tasks");
-        if (tasksData !== null) {
-          let tasks = JSON.parse(tasksData);
-          tasks = tasks.filter((task) => task.id !== taskId);
-          await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
-        }
-
-        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
-      } catch (error) {
-        console.log("Error deleting task:", error);
-      }
-    };
-
     const startTask = async (taskId) => {
       try {
         if (item.isPrerequisite) {
           const pendingTask = tasks.filter(
             (task) =>
-              task.member.id === loggedUser.id &&
+              task.member.id === currentUser.id &&
               task.isStarted &&
               !task.isCompleted
           );
@@ -256,29 +245,29 @@ const DashboardScreen = () => {
           )}
 
           <View style={styles.detailsContainer}>
-            <Text style={styles.taskTitle}>Task ID:</Text>
+            <Text style={styles.taskTitle}>Task ID : </Text>
             <Text style={styles.taskName}>{item.taskId}</Text>
           </View>
 
           <View style={styles.detailsContainer}>
-            <Text style={styles.taskTitle}>Task Name:</Text>
+            <Text style={styles.taskTitle}>Task Name : </Text>
             <Text style={styles.taskName}>{item.name}</Text>
           </View>
 
           <View style={styles.detailsContainer}>
-            <Text style={styles.taskTitle}>Task Description:</Text>
+            <Text style={styles.taskTitle}>Task Description : </Text>
             <Text style={styles.taskDescription}>{item.description}</Text>
           </View>
 
           <View style={styles.detailsContainer}>
-            <Text style={styles.taskTitle}>Start Date:</Text>
+            <Text style={styles.taskTitle}>Start Date : </Text>
             <Text style={styles.taskDates}>
               {formatDate(item.startDate) ? formatDate(item.startDate) : "N/A"}
             </Text>
           </View>
 
           <View style={styles.detailsContainer}>
-            <Text style={styles.taskTitle}>End Date:</Text>
+            <Text style={styles.taskTitle}>End Date : </Text>
             <Text style={styles.taskDates}>
               {formatDate(item.endDate) ? formatDate(item.endDate) : "N/A"}
             </Text>

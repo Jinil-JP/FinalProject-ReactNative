@@ -38,10 +38,8 @@ const Members = () => {
                 const msg = await deleteMember(item.userId);
                 if (msg) {
                   Alert.alert("Success", msg);
-                  setMembers((prevMembers) =>
-                    prevMembers.filter(
-                      (member) => member.userId !== item.userId
-                    )
+                  setMembers((members) =>
+                    members.filter((member) => member.userId !== item.userId)
                   );
                 } else {
                   Alert.alert("Error", "Failed to delete member.");
@@ -59,9 +57,9 @@ const Members = () => {
     return (
       <View style={styles.memberItem}>
         <View style={styles.memberDetailsContainer}>
-          <Text style={styles.memberName}>Name: {item.name}</Text>
-          <Text style={styles.memberEmail}>Email: {item.email}</Text>
-          <Text style={styles.memberRate}>Hourly Rate: {item.hourlyRate}</Text>
+          <Text style={styles.memberName}>Name : {item.name}</Text>
+          <Text style={styles.memberEmail}>Email : {item.email}</Text>
+          <Text style={styles.memberRate}>Hourly Rate : {item.hourlyRate}</Text>
         </View>
         <TouchableOpacity
           style={styles.deleteButton}
