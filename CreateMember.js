@@ -1,47 +1,51 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createUser } from "./api";
 
 const CreateMember = () => {
   const [memberName, setMemberName] = useState("");
   const [memberEmail, setMemberEmail] = useState("");
   const [hourlyRate, setHourlyRate] = useState("");
   const [password, setPassword] = useState("");
-  const [memberArray, setMemberArray] = useState([]);
-  const [userArray, setUserArray] = useState([]);
-
-  useEffect(() => {
-    loadMemberArray();
-  }, []);
-
-  const loadMemberArray = async () => {
-    try {
-      const userArrayString = await AsyncStorage.getItem("users");
-      const memberArrayString = await AsyncStorage.getItem("members");
-
-      if (userArrayString) {
-        setUserArray(JSON.parse(userArrayString));
-      }
-
-      if (memberArrayString) {
-        setMemberArray(JSON.parse(memberArrayString));
-      }
-    } catch (error) {
-      console.log("Error loading member array:", error);
-    }
-  };
+  const [validationError, setValidationError] = useState("");
 
   const handleCreateMember = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
     try {
+      const userData = {
+        name: memberName,
+        email: memberEmail,
+        password: password,
+        isAdmin: false,
+        hourlyRate: hourlyRate,
+      };
+
+      await createUser(userData);
+
       Alert.alert("Success", "Member created successfully");
 
       setMemberName("");
       setMemberEmail("");
       setHourlyRate("");
       setPassword("");
+      setValidationError("");
     } catch (error) {
-      console.log("Error creating member:", error);
+      Alert.alert("Success", "Error creating member:");
+      console.log(error);
     }
+  };
+
+  const validateForm = () => {
+    if (!memberName || !memberEmail || !password || !hourlyRate) {
+      setValidationError("All fields are required");
+      return false;
+    }
+
+    setValidationError("");
+    return true;
   };
 
   return (
@@ -90,6 +94,10 @@ const CreateMember = () => {
           />
         </View>
 
+        {validationError ? (
+          <Text style={styles.error}>{validationError}</Text>
+        ) : null}
+
         <Button title="Create Member" onPress={handleCreateMember} />
       </View>
     </View>
@@ -107,6 +115,10 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     elevation: 2,
+  },
+  error: {
+    color: "red",
+    marginBottom: 10,
   },
   inputContainer: {
     marginBottom: 20,

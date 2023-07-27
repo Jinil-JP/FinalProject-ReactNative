@@ -5,6 +5,7 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { fetchMembers, deleteMember } from "./api";
 
@@ -18,18 +19,38 @@ const Members = () => {
   const retrieveMembersData = async () => {
     const membersData = await fetchMembers();
     setMembers(membersData);
-
-    console.log(membersData);
   };
 
   const renderMemberItem = ({ item }) => {
     const handleDeleteMember = async () => {
       try {
-        const msg = await deleteMember(item.userId);
-        if (!msg) {
-          console.log(msg);
-          setMembers(members.filter((member) => member.userId !== item.userId));
-        }
+        Alert.alert(
+          "Confirm",
+          "Are you sure you want to delete this member?",
+          [
+            {
+              text: "No",
+              style: "cancel",
+            },
+            {
+              text: "Yes",
+              onPress: async () => {
+                const msg = await deleteMember(item.userId);
+                if (msg) {
+                  Alert.alert("Success", msg);
+                  setMembers((prevMembers) =>
+                    prevMembers.filter(
+                      (member) => member.userId !== item.userId
+                    )
+                  );
+                } else {
+                  Alert.alert("Error", "Failed to delete member.");
+                }
+              },
+            },
+          ],
+          { cancelable: false }
+        );
       } catch (error) {
         console.log("Error deleting member:", error);
       }
@@ -38,8 +59,8 @@ const Members = () => {
     return (
       <View style={styles.memberItem}>
         <View style={styles.memberDetailsContainer}>
-          <Text style={styles.memberName}>{item.name}</Text>
-          <Text style={styles.memberEmail}>{item.email}</Text>
+          <Text style={styles.memberName}>Name: {item.name}</Text>
+          <Text style={styles.memberEmail}>Email: {item.email}</Text>
           <Text style={styles.memberRate}>Hourly Rate: {item.hourlyRate}</Text>
         </View>
         <TouchableOpacity

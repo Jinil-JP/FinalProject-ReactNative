@@ -10,8 +10,7 @@ import {
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Picker } from "@react-native-picker/picker";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Task from "./models/TaskModel";
+import { fetchMembers, createTask } from "./api";
 
 const CreateTask = () => {
   const [taskName, setTaskName] = useState("");
@@ -39,19 +38,12 @@ const CreateTask = () => {
   };
 
   useEffect(() => {
-    retrieveMember();
+    retrieveMembersData();
   }, []);
 
-  const retrieveMember = async () => {
-    try {
-      const memberData = await AsyncStorage.getItem("members");
-      if (memberData !== null) {
-        const members = JSON.parse(memberData);
-        setMembers(members);
-      }
-    } catch (error) {
-      console.log("Error retrieving member names:", error);
-    }
+  const retrieveMembersData = async () => {
+    const membersData = await fetchMembers();
+    setMembers(membersData);
   };
 
   const handleStartDateChange = (selectedDate) => {
@@ -103,37 +95,21 @@ const CreateTask = () => {
     }
 
     try {
-      // Retrieve tasks data from AsyncStorage
-      const tasksData = await AsyncStorage.getItem("tasks");
-      const tasks = JSON.parse(tasksData) || [];
+      const taskData = {
+        name: taskName,
+        description: taskDescription,
+        startDate: taskStartDate,
+        endDate: taskEndDate,
+        isStarted: false,
+        isCompleted: false,
+        isPrerequisite: isPrerequisite,
+        selectedMemberId: selectedMember.userId,
+      };
 
-      // Generate a unique ID for the task (you can use a library like uuid to generate IDs)
-      const timestamp = Date.now().toString();
-      const randomNumber = Math.floor(Math.random() * 10000).toString();
-      const taskId = timestamp + randomNumber;
+      await createTask(taskData);
 
-      // Create a new task object
-      const newTask = new Task(
-        taskId,
-        taskName,
-        taskDescription,
-        taskStartDate,
-        taskEndDate,
-        false,
-        false, // isCompleted
-        isPrerequisite,
-        0, // hoursWorked
-        selectedMember,
-        "2023-07-10T23:15:20.720Z",
-        null
-      );
+      Alert.alert("Success", "Task created successfully");
 
-      tasks.push(newTask);
-
-      // Store the updated tasks array in AsyncStorage
-      await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
-
-      // Reset the state values to clear the input fields
       setTaskName("");
       setTaskDescription("");
       setTaskStartDate(null);
@@ -141,11 +117,9 @@ const CreateTask = () => {
       setSelectedMember("");
       setIsPrerequisite(false);
       setValidationError("");
-
-      Alert.alert("Success", "Task created successfully");
     } catch (error) {
-      console.log("Error retrieving or storing tasks:", error);
-      throw error; // re-throw the error to be caught by the outer try-catch block
+      Alert.alert("Success", "Error creating task:");
+      console.log(error);
     }
   };
 

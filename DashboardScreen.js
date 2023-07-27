@@ -11,10 +11,10 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons } from "@expo/vector-icons";
 import TaskDetailsModel from "./TaskDetailsModel";
+import { fetchTasks } from "./api";
 
 const DashboardScreen = () => {
   const [tasks, setTasks] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
   const [loggedUser, setLoggedUser] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -57,14 +57,9 @@ const DashboardScreen = () => {
 
   const retrieveTasks = async () => {
     try {
-      let tasksData = await AsyncStorage.getItem("tasks");
-      if (tasksData !== null) {
-        let tasks = JSON.parse(tasksData);
-        if (loggedUser && !loggedUser.isAdmin) {
-          tasks = tasks.filter((task) => loggedUser.id === task.member.id);
-        }
-        setTasks(tasks);
-      }
+      const currentUserId = 6;
+      const tasksData = await fetchTasks(currentUserId);
+      setTasks(tasksData);
     } catch (error) {
       console.log("Error retrieving tasks:", error);
     }
@@ -251,7 +246,7 @@ const DashboardScreen = () => {
     return (
       <TouchableOpacity
         activeOpacity={1}
-        onPress={() => handleTaskItemPress(item.id)}
+        onPress={() => handleTaskItemPress(item.taskId)}
       >
         <View style={styles.taskItem}>
           {item.isPrerequisite && (
@@ -262,7 +257,7 @@ const DashboardScreen = () => {
 
           <View style={styles.detailsContainer}>
             <Text style={styles.taskTitle}>Task ID:</Text>
-            <Text style={styles.taskName}>{item.id}</Text>
+            <Text style={styles.taskName}>{item.taskId}</Text>
           </View>
 
           <View style={styles.detailsContainer}>
@@ -293,14 +288,14 @@ const DashboardScreen = () => {
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={styles.button}
-                onPress={() => handleDelete(item.id)}
+                onPress={() => handleDelete(item.taskId)}
               >
                 <Text style={styles.buttonText}>Delete</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.button}
-                onPress={() => handleCompleteTask(item.id)}
+                onPress={() => handleCompleteTask(item.taskId)}
               >
                 <Text style={styles.buttonText}>Complete Task</Text>
               </TouchableOpacity>
@@ -310,7 +305,7 @@ const DashboardScreen = () => {
               {!item.isCompleted && !item.isStarted && (
                 <TouchableOpacity
                   style={styles.button}
-                  onPress={() => handleStartTask(item.id)}
+                  onPress={() => handleStartTask(item.taskId)}
                 >
                   <Text style={styles.buttonText}>Start Task</Text>
                 </TouchableOpacity>
@@ -319,7 +314,7 @@ const DashboardScreen = () => {
               {!item.isCompleted && item.isStarted && (
                 <TouchableOpacity
                   style={styles.button}
-                  onPress={() => handleCompleteTask(item.id)}
+                  onPress={() => handleCompleteTask(item.taskId)}
                 >
                   <Text style={styles.buttonText}>Complete Task</Text>
                 </TouchableOpacity>
@@ -340,7 +335,7 @@ const DashboardScreen = () => {
           <FlatList
             data={tasks}
             renderItem={renderTaskItem}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item) => item.taskId.toString()}
             contentContainerStyle={styles.taskList}
             showsVerticalScrollIndicator={false}
           />
