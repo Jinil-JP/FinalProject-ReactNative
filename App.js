@@ -53,7 +53,6 @@ const LoginPage = () => {
     }
   };
 
-  console.log(currentUser);
   if (currentUser) {
     return (
       <DrawerMenuScreen handleLogout={handleLogout} currentUser={currentUser} />
