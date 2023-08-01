@@ -11,7 +11,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons } from "@expo/vector-icons";
 import TaskDetailsModel from "./TaskDetailsModel";
-import { fetchTasks, deleteTask } from "./api";
+import { fetchTasks, deleteTask, startTask, completeTask } from "./api";
 import { getCurrentUser } from "./Constant";
 
 const DashboardScreen = () => {
@@ -61,6 +61,7 @@ const DashboardScreen = () => {
 
   const handleTaskItemPress = (taskId) => {
     const task = tasks.find((task) => task.id === taskId);
+    console.log(task);
     setSelectedTask(task);
     setIsModalVisible(true);
   };
@@ -85,9 +86,10 @@ const DashboardScreen = () => {
               const msg = await deleteTask(taskId);
               if (msg) {
                 Alert.alert("Success", msg);
-                setTasks((tasks) =>
-                  tasks.filter((task) => task.taskId !== taskId)
-                );
+                retrieveTasks();
+                // setTasks((tasks) =>
+                //   tasks.filter((task) => task.taskId !== taskId)
+                // );
               } else {
                 Alert.alert("Error", "Failed to delete member.");
               }
@@ -102,8 +104,14 @@ const DashboardScreen = () => {
         { text: "Cancel", style: "cancel" },
         {
           text: "Start",
-          onPress: () => {
-            startTask(taskId);
+          onPress: async () => {
+            const msg = await startTask(taskId);
+            if (msg) {
+              Alert.alert("Success", msg);
+              retrieveTasks();
+            } else {
+              Alert.alert("Error", "Failed to delete member.");
+            }
           },
         },
       ]);
@@ -117,119 +125,26 @@ const DashboardScreen = () => {
           { text: "Cancel", style: "cancel" },
           {
             text: "Complete",
-            onPress: () => completeTask(taskId),
+            onPress: async () => {
+              const msg = await completeTask(taskId, currentUser.userId);
+              console.log(msg);
+              if (msg) {
+                Alert.alert("Success", msg);
+                retrieveTasks();
+              } else {
+                Alert.alert("Error", "Failed to delete member.");
+              }
+            },
           },
         ]
       );
     };
 
     const handleTaskItemPress = (taskId) => {
-      const task = tasks.find((task) => task.id === taskId);
+      console.log("Here");
+      const task = tasks.find((task) => task.taskId === taskId);
       setSelectedTask(task);
       setIsModalVisible(true);
-    };
-
-    const startTask = async (taskId) => {
-      try {
-        if (item.isPrerequisite) {
-          const pendingTask = tasks.filter(
-            (task) =>
-              task.member.id === currentUser.id &&
-              task.isStarted &&
-              !task.isCompleted
-          );
-
-          if (pendingTask.length > 0) {
-            Alert.alert(
-              "Tasks Pending",
-              "You cannot start this prerequisite task as there are pending tasks."
-            );
-            return;
-          }
-        }
-
-        const startTime = new Date();
-
-        setTasks((prevTasks) =>
-          prevTasks.map((task) => {
-            if (task.id === taskId) {
-              return {
-                ...task,
-                isStarted: true,
-                taskStartTime: startTime,
-              };
-            }
-            return task;
-          })
-        );
-
-        let tasksData = await AsyncStorage.getItem("tasks");
-        if (tasksData !== null) {
-          let tasks = JSON.parse(tasksData);
-          tasks = tasks.map((task) => {
-            if (task.id === taskId) {
-              return {
-                ...task,
-                isStarted: true,
-                taskStartTime: startTime,
-              };
-            }
-            return task;
-          });
-          await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
-        }
-      } catch (error) {
-        console.log("Error starting task:", error);
-      }
-    };
-
-    const completeTask = async (taskId) => {
-      try {
-        const endTime = new Date();
-        const startTime = item.taskStartTime
-          ? new Date(item.taskStartTime)
-          : new Date();
-
-        const hoursWorked = Math.abs(endTime - startTime) / 36e5;
-
-        const cost = hoursWorked * item.member.hourlyRate;
-
-        let tasksData = await AsyncStorage.getItem("tasks");
-        if (tasksData !== null) {
-          let tasks = JSON.parse(tasksData);
-          tasks = tasks.map((task) => {
-            if (task.id === taskId) {
-              task.isCompleted = true;
-              task.taskStartTime = startTime;
-              task.taskEndTime = endTime;
-              task.hoursWorked = hoursWorked;
-              task.cost = cost;
-            }
-            return task;
-          });
-          await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
-        }
-
-        setTasks((prevTasks) =>
-          prevTasks.map((task) => {
-            if (task.id === taskId) {
-              return {
-                ...task,
-                isCompleted: true,
-                taskStartTime: startTime,
-                taskEndTime: endTime,
-                hoursWorked,
-                cost,
-              };
-            }
-            return task;
-          })
-        );
-
-        const completedTask = tasks.find((task) => task.id === taskId);
-      } catch (error) {
-        console.log("Error completing task:", error);
-      }
     };
 
     return (

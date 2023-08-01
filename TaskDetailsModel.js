@@ -28,7 +28,7 @@ const TaskDetailsModal = ({ task, closeModal }) => {
           <Text style={styles.sectionTitle}>Task Details</Text>
           <View style={styles.detailItem}>
             <Text style={styles.detailLabel}>ID:</Text>
-            <Text style={styles.detailText}>{task?.id}</Text>
+            <Text style={styles.detailText}>{task?.taskId}</Text>
           </View>
           <View style={styles.detailItem}>
             <Text style={styles.detailLabel}>Name:</Text>
@@ -82,7 +82,7 @@ const TaskDetailsModal = ({ task, closeModal }) => {
           <Text style={styles.sectionTitle}>Task Member Details</Text>
           <View style={styles.detailItem}>
             <Text style={styles.detailLabel}>Member ID:</Text>
-            <Text style={styles.detailText}>{task?.member?.id}</Text>
+            <Text style={styles.detailText}>{task?.member?.userId}</Text>
           </View>
           <View style={styles.detailItem}>
             <Text style={styles.detailLabel}>Member Name:</Text>

@@ -1,7 +1,8 @@
 import Member from "./models/MemberModel";
 import Task from "./models/TaskModel";
 
-const BASE_URL = "http://10.51.223.234:3000/";
+// const BASE_URL = "http://10.51.223.234:3000/";
+const BASE_URL = "http://192.168.2.14:3000/";
 
 const createUser = async (userData) => {
   try {
@@ -207,6 +208,63 @@ const deleteTask = async (taskId) => {
   }
 };
 
+const startTask = async (taskId) => {
+  try {
+    const START_URL = `${BASE_URL}start_task`;
+    const response = await fetch(START_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        taskId: taskId,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to start task from the API.");
+    }
+
+    const data = await response.json();
+    return data.message;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const completeTask = async (taskId, currentUserId) => {
+  try {
+    const COMPLETE_URL = `${BASE_URL}complete_task`;
+    const response = await fetch(COMPLETE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        taskId: taskId,
+        currentUserId: currentUserId,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to delete task from the API.");
+    }
+
+    const data = await response.json();
+    return data.message;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const handleApiResponse = async (response) => {
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Something went wrong");
+  }
+  return response.json();
+};
+
 export {
   createUser,
   login,
@@ -214,5 +272,7 @@ export {
   fetchMembers,
   deleteMember,
   createTask,
+  startTask,
+  completeTask,
   deleteTask,
 };
