@@ -91,7 +91,7 @@ const DashboardScreen = () => {
                 //   tasks.filter((task) => task.taskId !== taskId)
                 // );
               } else {
-                Alert.alert("Error", "Failed to delete member.");
+                Alert.alert("Error", msg);
               }
             },
           },
@@ -110,7 +110,7 @@ const DashboardScreen = () => {
               Alert.alert("Success", msg);
               retrieveTasks();
             } else {
-              Alert.alert("Error", "Failed to delete member.");
+              // Alert.alert("Error", msg);
             }
           },
         },
@@ -127,12 +127,11 @@ const DashboardScreen = () => {
             text: "Complete",
             onPress: async () => {
               const msg = await completeTask(taskId, currentUser.userId);
-              console.log(msg);
               if (msg) {
                 Alert.alert("Success", msg);
                 retrieveTasks();
               } else {
-                Alert.alert("Error", "Failed to delete member.");
+                Alert.alert("Error", msg);
               }
             },
           },

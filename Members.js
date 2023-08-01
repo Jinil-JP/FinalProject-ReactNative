@@ -42,7 +42,7 @@ const Members = () => {
                     members.filter((member) => member.userId !== item.userId)
                   );
                 } else {
-                  Alert.alert("Error", "Failed to delete member.");
+                  Alert.alert("Error", msg);
                 }
               },
             },

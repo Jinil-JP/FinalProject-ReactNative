@@ -1,5 +1,6 @@
 import Member from "./models/MemberModel";
 import Task from "./models/TaskModel";
+import { Alert } from "react-native";
 
 // const BASE_URL = "http://10.51.223.234:3000/";
 const BASE_URL = "http://192.168.2.14:3000/";
@@ -42,6 +43,8 @@ const login = async (email, password) => {
     });
 
     const data = await response.json();
+
+    console.log(data);
     if (response.status === 200) {
       return new Member(
         data.userId,
@@ -222,12 +225,15 @@ const startTask = async (taskId) => {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to start task from the API.");
+      console.log("error");
+      const data = await response.json();
+      Alert.alert("Error", data.error);
+      return;
     }
-
     const data = await response.json();
     return data.message;
   } catch (error) {
+    console.log("error catch");
     throw error;
   }
 };
